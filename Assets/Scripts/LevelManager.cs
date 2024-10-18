@@ -1,6 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 using Dreamteck.Splines;
 
@@ -9,13 +8,16 @@ public class LevelManager : MonoBehaviour
     public GameObject[] level;
     public SplineFollower playerFollower;
     public ImageGroup[] imageGroups;
-    private int currentLevelIndex = 0;
+    private int currentLevelIndex=0;
     private GameObject currentLevelInstance;
     public GameObject nextLevelButton;
     public GameObject loadCardPanel;
     public Movement movement;
     public static LevelManager Instance;
     public ImageUnlocker imageUnlocker;
+
+    private const string CurrentLevelKey = "CurrentLevel";
+
     private void Awake()
     {
         if (Instance == null)
@@ -26,8 +28,11 @@ public class LevelManager : MonoBehaviour
 
     private void Start()
     {
+        //PlayerPrefs.DeleteAll();
+        currentLevelIndex = LoadCurrentLevel();
         LoadLevel(currentLevelIndex);
         imageUnlocker.Initialize(imageGroups.Length, 4);
+        UIManager.Instance.UpdateLevelText(currentLevelIndex);
     }
 
     public void WinLevel()  //ActiveNextLevelButton
@@ -36,8 +41,6 @@ public class LevelManager : MonoBehaviour
         int unlockedCount = PlayerScore.Instance.GetRarity();
         imageUnlocker.UpdateUnlockedImages(imageGroups[currentLevelIndex], currentLevelIndex, unlockedCount);
 
-        
-        //UnlockImagesBasedOnTexture();
     }
 
     public void TurnOnCardPanel()
@@ -64,6 +67,7 @@ public class LevelManager : MonoBehaviour
         {
             LoadLevel(currentLevelIndex);
             UIManager.Instance.UpdateLevelText(currentLevelIndex);
+            SaveCurrentLevel(currentLevelIndex);
         }
         else
         {
@@ -93,39 +97,18 @@ public class LevelManager : MonoBehaviour
             Debug.LogError("Spline not found in the loaded level!");
         }
     }
-    /*private void UnlockImagesBasedOnTexture()
+
+    // Hàm lưu level hiện tại vào PlayerPrefs
+    private void SaveCurrentLevel(int levelIndex)
     {
-        Texture currentTexture = PlayerScore.Instance.targetRawImage.texture;
+        PlayerPrefs.SetInt(CurrentLevelKey, levelIndex);
+        PlayerPrefs.Save();
+        Debug.Log("Current level saved: " + levelIndex);
+    }
 
-        if (currentTexture == PlayerScore.Instance.normalTexture)
-        {
-            // Không mở khóa gì vì đang ở texture normal
-        }
-        else if (currentTexture == PlayerScore.Instance.rareTexture)
-        {
-            collectionGameObjects[0].GetComponent<Collection>().unlocked = true;
-            collectionGameObjects[1].GetComponent<Collection>().unlocked = true;
-
-        }
-        else if (currentTexture == PlayerScore.Instance.srareTexture)
-        {
-            collectionGameObjects[0].GetComponent<Collection>().unlocked = true;
-            collectionGameObjects[1].GetComponent<Collection>().unlocked = true;
-            collectionGameObjects[2].GetComponent<Collection>().unlocked = true;
-        }
-        else if (currentTexture == PlayerScore.Instance.epicTexture)
-        {
-            collectionGameObjects[0].GetComponent<Collection>().unlocked = true;
-            collectionGameObjects[1].GetComponent<Collection>().unlocked = true;
-            collectionGameObjects[2].GetComponent<Collection>().unlocked = true;
-            collectionGameObjects[3].GetComponent<Collection>().unlocked = true;
-        }
-
-        foreach (GameObject obj in collectionGameObjects)
-        {
-            obj.GetComponent<Collection>().UpdateImage();
-        }
-    }*/
-
-
+    // Hàm tải level hiện tại từ PlayerPrefs
+    private int LoadCurrentLevel()
+    {
+        return PlayerPrefs.GetInt(CurrentLevelKey, 0);
+    }
 }
