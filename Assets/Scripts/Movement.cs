@@ -8,6 +8,7 @@ using TMPro;
 public class Movement : MonoBehaviour
 {
     public Transform playerTransform;
+    public Transform movementTarget;
     public SplineFollower splineFollower;
     public float followSpeed;
     public float swerveSpeed;
@@ -18,6 +19,10 @@ public class Movement : MonoBehaviour
     public bool isMoving;
     private float lastPositionX;
     private float moveFactorX;
+    public float jumpHeight = 2f;
+    public float jumpDuration = 0.5f;
+    private bool isJumping = false;
+    private float jumpStartTime;
 
     public GraphicRaycaster canvas2Raycaster;
     private PointerEventData pointerEventData;
@@ -34,6 +39,15 @@ public class Movement : MonoBehaviour
         if (IsPointerOverCanvas2())
         {
             return;
+        }
+        if (Input.GetKeyDown(KeyCode.Space) && !isJumping)
+        {
+            StartJump();
+        }
+
+        if (isJumping)
+        {
+            PerformJump();
         }
 
         if (!isMoving)
@@ -66,6 +80,7 @@ public class Movement : MonoBehaviour
                 moveFactorX = 0f;
             }
         }
+        
     }
 
     private bool IsPointerOverCanvas2()
@@ -89,6 +104,7 @@ public class Movement : MonoBehaviour
         targetPosX = Mathf.Clamp(targetPosX, -swerveRange, swerveRange);
         var newPos = new Vector3(targetPosX, playerPos.y, playerPos.z);
         playerTransform.localPosition = newPos;
+        movementTarget.localPosition = newPos;
     }
 
     private void UpdateRotation()
@@ -97,6 +113,7 @@ public class Movement : MonoBehaviour
         float targetZRotation = -normalizedX * maxRotation;
 
         playerTransform.localRotation = Quaternion.Euler(0, 0, targetZRotation);
+        movementTarget.localRotation = Quaternion.Euler(0, 0, targetZRotation);
     }
 
     private void StartMoving()
@@ -104,5 +121,25 @@ public class Movement : MonoBehaviour
         Debug.Log("Starting movement...");
         splineFollower.follow = true;
         splineFollower.followSpeed = followSpeed;
+    }
+    private void StartJump()
+    {
+        isJumping = true;
+        jumpStartTime = Time.time;
+    }
+    private void PerformJump()
+    {
+        float elapsedTime = Time.time - jumpStartTime;
+        if (elapsedTime < jumpDuration)
+        {
+            float jumpProgress = elapsedTime / jumpDuration;
+            float jumpY = Mathf.Sin(jumpProgress * Mathf.PI) * jumpHeight;
+            playerTransform.localPosition = new Vector3(playerTransform.localPosition.x, jumpY + 2.5f, playerTransform.localPosition.z);
+        }
+        else
+        {
+            isJumping = false;
+            playerTransform.localPosition = new Vector3(playerTransform.localPosition.x, 2.5f, playerTransform.localPosition.z);
+        }
     }
 }

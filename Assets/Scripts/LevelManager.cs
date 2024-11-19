@@ -28,7 +28,7 @@ public class LevelManager : MonoBehaviour
 
     private void Start()
     {
-        //PlayerPrefs.DeleteAll();
+        PlayerPrefs.DeleteAll();
         currentLevelIndex = LoadCurrentLevel();
         LoadLevel(currentLevelIndex);
         imageUnlocker.Initialize(imageGroups.Length, 4);
@@ -40,7 +40,7 @@ public class LevelManager : MonoBehaviour
         nextLevelButton.SetActive(true);
         int unlockedCount = PlayerScore.Instance.GetRarity();
         imageUnlocker.UpdateUnlockedImages(imageGroups[currentLevelIndex], currentLevelIndex, unlockedCount);
-
+        GameManager.Instance.LevelCompleted();
     }
 
     public void TurnOnCardPanel()
@@ -98,7 +98,6 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    // Hàm lưu level hiện tại vào PlayerPrefs
     private void SaveCurrentLevel(int levelIndex)
     {
         PlayerPrefs.SetInt(CurrentLevelKey, levelIndex);
@@ -106,7 +105,6 @@ public class LevelManager : MonoBehaviour
         Debug.Log("Current level saved: " + levelIndex);
     }
 
-    // Hàm tải level hiện tại từ PlayerPrefs
     private int LoadCurrentLevel()
     {
         return PlayerPrefs.GetInt(CurrentLevelKey, 0);
